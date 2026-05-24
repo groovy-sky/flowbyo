@@ -1,0 +1,45 @@
+meta:
+  name: "System with Nested Components"
+  diagram_type: block-diagram
+  version: "1"
+
+matrix:
+  - - id: API_GATEWAY
+      label: "API Gateway"
+      type: component
+      links:
+        - to: [1, 0]
+  
+    - id: AUTH_SERVICE
+      label: "Auth Service"
+      type: subprocess
+      matrix:
+        - - id: AUTH_START
+            label: "Start"
+            type: start
+            links:
+              - to: [1, 0]
+        
+          - id: AUTH_VALIDATE
+            label: "Validate Token"
+            type: process
+            links:
+              - to: [1, 0]
+        
+          - id: AUTH_END
+            label: "End"
+            type: end
+
+  - - id: DB_SERVICE
+      label: "Database"
+      type: component
+  
+    - id: CACHE_SERVICE
+      label: "Cache"
+      type: component
+
+view:
+  direction: LR
+  theme: light
+  padding: 40
+  cell_size: [120, 80]

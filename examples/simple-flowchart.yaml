@@ -1,0 +1,47 @@
+meta:
+  name: "Simple Authentication Flow"
+  diagram_type: flowchart
+  version: "1"
+
+matrix:
+  - - id: START_1
+      label: "Start"
+      type: start
+      links:
+        - to: [0, 1]
+  
+  - - id: AUTH_PROMPT
+      label: "Request Credentials"
+      type: process
+      links:
+        - to: [0, 2]
+  
+  - - id: AUTH_VALIDATE
+      label: "Valid?"
+      type: decision
+      links:
+        - to: [1, 1]
+          label: "Yes"
+        - to: [0, 3]
+          label: "No"
+  
+  - - id: AUTH_FAILED
+      label: "Auth Failed"
+      type: process
+      links:
+        - to: [0, 4]
+    - id: AUTH_SUCCESS
+      label: "Proceed"
+      type: process
+      links:
+        - to: [0, 4]
+  
+  - - id: END_1
+      label: "End"
+      type: end
+
+view:
+  direction: TB
+  theme: light
+  padding: 40
+  cell_size: [120, 80]

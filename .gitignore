@@ -1,0 +1,11 @@
+# Build outputs
+flowbyo
+*.exe
+
+# Generated artifacts
+*.svg
+*.html
+*.png
+
+# Temporary and local scratch files
+/tmp/
