@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"goflowyourself/pkg/diagram"
+	"github.com/groovy-sky/goflowyourself/pkg/diagram"
 )
 
 func main() {

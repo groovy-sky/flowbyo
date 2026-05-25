@@ -83,6 +83,29 @@ go run cmd/goflowyourself/main.go load --input diagram.yaml --validate
      VPC-A   VPC-B   VPC-C
 ```
 
+```svg
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="510" height="1060" viewBox="0 0 510 1060">
+<defs>
+  <style>
+    .node { fill: white; stroke: #333; stroke-width: 2; }
+    .node-start, .node-end { fill: #90EE90; rx: 10; ry: 10; }
+    .node-process { fill: #87CEEB; }
+    .node-decision { fill: #FFD700; }
+    .node-subprocess { fill: #DDA0DD; }
+    .node-text { font-family: Arial, sans-serif; font-size: 12px; text-anchor: middle; dominant-baseline: middle; }
+    .link { stroke: #333; stroke-width: 2; fill: none; marker-end: url(#arrowhead); }
+    .link-label { font-family: Arial, sans-serif; font-size: 10px; fill: #333; }
+    #arrowhead { fill: #333; }
+  </style>
+  <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+    <polygon points="0 0, 10 3, 0 6" />
+  </marker>
+</defs>
+<rect width="510" height="1060" fill="white" stroke="#ddd" stroke-width="1"/><line x1="254" y1="110" x2="254" y2="180" class="link"/><line x1="255" y1="250" x2="255" y2="320" class="link"/><line x1="255" y1="530" x2="255" y2="600" class="link"/><line x1="254" y1="670" x2="254" y2="740" class="link"/><line x1="255" y1="810" x2="255" y2="880" class="link"/><line x1="195" y1="810" x2="140" y2="880" class="link"/><line x1="314" y1="810" x2="370" y2="880" class="link"/><line x1="254" y1="390" x2="254" y2="460" class="link"/><rect x="200" y="40" width="110" height="70" class="node node-component"/><text x="255" y="75" class="node-text">Internet</text><rect x="199" y="180" width="111" height="70" class="node node-component"/><text x="254" y="215" class="node-text">NAT Gateway</text><rect x="196" y="320" width="118" height="70" class="node node-component"/><text x="255" y="355" class="node-text">Security VPC</text><rect x="150" y="460" width="209" height="70" class="node node-component"/><text x="254" y="495" class="node-text">Gateway LB / Palo Alto FW</text><rect x="200" y="600" width="110" height="70" class="node node-component"/><text x="255" y="635" class="node-text">GWLBe</text><rect x="185" y="740" width="139" height="70" class="node node-component"/><text x="254" y="775" class="node-text">Transit Gateway</text><rect x="40" y="880" width="110" height="70" class="node node-component"/><text x="95" y="915" class="node-text">VPC-A</text><rect x="200" y="880" width="110" height="70" class="node node-component"/><text x="255" y="915" class="node-text">VPC-B</text><rect x="360" y="880" width="110" height="70" class="node node-component"/><text x="415" y="915" class="node-text">VPC-C</text>
+</svg>
+```
+
 ## Graph YAML Example
 
 ```yaml

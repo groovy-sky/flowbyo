@@ -1,4 +1,4 @@
-module goflowyourself
+module github.com/groovy-sky/goflowyourself
 
 go 1.21
 
