@@ -1,4 +1,4 @@
-module flowbyo
+module goflowyourself
 
 go 1.21
 

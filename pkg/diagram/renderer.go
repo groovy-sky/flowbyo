@@ -52,7 +52,7 @@ func (r *SVGRenderer) RenderToHTML(model *RuntimeModel, filePath string) error {
 	if idx := strings.Index(svg, "<svg "); idx >= 0 {
 		svg = svg[idx:]
 	}
-	title := "Flowbyo Diagram"
+	title := "Goflowyourself Diagram"
 	if model != nil && strings.TrimSpace(model.Meta.Name) != "" {
 		title = model.Meta.Name
 	}

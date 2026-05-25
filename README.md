@@ -1,6 +1,6 @@
-# Flowbyo
+# Goflowyourself
 
-Flowbyo converts text-based diagrams into visual outputs.
+Goflowyourself converts text-based diagrams into visual outputs.
 
 Primary goal:
 - text/markdown schema -> SVG
@@ -24,13 +24,13 @@ The canonical model is graph-based.
 Build:
 
 ```bash
-go build -o flowbyo ./cmd/flowbyo
+go build -o goflowyourself ./cmd/goflowyourself
 ```
 
 ### 1) Convert Text Schema To SVG/HTML
 
 ```bash
-go run cmd/flowbyo/main.go from-schema \
+go run cmd/goflowyourself/main.go from-schema \
   --input examples/network-schema.txt \
   --output network.svg \
   --html network.html \
@@ -51,7 +51,7 @@ At least one of `--output`, `--html`, or `--save` is required.
 ### 2) Load Graph YAML And Render
 
 ```bash
-go run cmd/flowbyo/main.go load \
+go run cmd/goflowyourself/main.go load \
   --input diagram.yaml \
   --output diagram.svg \
   --html diagram.html
@@ -60,7 +60,7 @@ go run cmd/flowbyo/main.go load \
 Validation-only mode:
 
 ```bash
-go run cmd/flowbyo/main.go load --input diagram.yaml --validate
+go run cmd/goflowyourself/main.go load --input diagram.yaml --validate
 ```
 
 ## Input Schema Example
@@ -121,7 +121,7 @@ view:
 ## Project Structure
 
 ```text
-cmd/flowbyo/main.go         CLI
+cmd/goflowyourself/main.go         CLI
 pkg/diagram/schema_parser.go text schema parsing
 pkg/diagram/types.go         model types
 pkg/diagram/parser.go        YAML load + runtime build
@@ -130,6 +130,10 @@ pkg/diagram/renderer.go      SVG + HTML rendering
 pkg/diagram/graph.go         graph/matrix conversion helpers
 examples/                    sample inputs
 ```
+
+## Maintenance
+
+- See `MAINTENANCE.md` for architecture responsibilities, verification commands, and required post-change documentation updates.
 
 ## Notes
 
