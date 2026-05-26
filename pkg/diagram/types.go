@@ -1,6 +1,6 @@
 package diagram
 
-// Coordinate represents [x, y] position in matrix
+// Coordinate represents [x, y] position in graph layout grid.
 type Coordinate [2]int
 
 // Element represents a block/node in the diagram
@@ -8,29 +8,9 @@ type Element struct {
 	ID          string         `yaml:"id"`
 	Label       string         `yaml:"label"`
 	Type        string         `yaml:"type"`
-	Links       []Link         `yaml:"links,omitempty"`
-	Matrix      Matrix         `yaml:"matrix,omitempty"`
 	Description string         `yaml:"description,omitempty"`
 	Style       map[string]any `yaml:"style,omitempty"`
 }
-
-// Link represents an edge from source element to target coordinate
-type Link struct {
-	To        Coordinate     `yaml:"to"`
-	Label     string         `yaml:"label,omitempty"`
-	Condition string         `yaml:"condition,omitempty"`
-	EdgeType  string         `yaml:"edge_type,omitempty"`
-	Style     map[string]any `yaml:"style,omitempty"`
-}
-
-// Cell is either nil or an Element
-type Cell *Element
-
-// Row is a slice of cells
-type Row []Cell
-
-// Matrix is a 2D grid of cells
-type Matrix []Row
 
 // Meta contains document metadata
 type Meta struct {
@@ -41,42 +21,38 @@ type Meta struct {
 
 // View contains rendering settings
 type View struct {
-	Direction      string `yaml:"direction,omitempty"`
-	Theme          string `yaml:"theme,omitempty"`
-	CellSize       []int  `yaml:"cell_size,omitempty"`
-	Padding        int    `yaml:"padding,omitempty"`
-	Routing        string `yaml:"routing,omitempty"`
-	CollapseNested bool   `yaml:"collapse_nested,omitempty"`
+	Direction string `yaml:"direction,omitempty"`
+	Theme     string `yaml:"theme,omitempty"`
+	CellSize  []int  `yaml:"cell_size,omitempty"`
+	Padding   int    `yaml:"padding,omitempty"`
+	Routing   string `yaml:"routing,omitempty"`
 }
 
 // Diagram is the top-level document
 type Diagram struct {
-	Meta   Meta        `yaml:"meta"`
-	Graph  *GraphModel `yaml:"graph,omitempty" json:"graph,omitempty"`
-	Matrix Matrix      `yaml:"matrix,omitempty"` // legacy input compatibility only
-	View   View        `yaml:"view,omitempty"`
+	Meta  Meta        `yaml:"meta"`
+	Graph *GraphModel `yaml:"graph,omitempty" json:"graph,omitempty"`
+	View  View        `yaml:"view,omitempty"`
 }
 
 // RuntimeElement extends Element with computed fields
 type RuntimeElement struct {
 	Element
 	Coord    Coordinate
-	Scope    string // scope identifier for the matrix containing this element
+	Scope    string // scope identifier containing this element
 	ParentID string // parent element id if nested
 	Children []RuntimeElement
 }
 
 // RuntimeModel represents parsed and validated diagram at runtime
 type RuntimeModel struct {
-	Meta          Meta
-	Root          Matrix
-	Elements      map[string]*RuntimeElement // id -> element
-	Graph         *GraphModel
-	ScopeIndex    map[string]map[Coordinate]string // scope -> coord -> element id
-	ScopeMatrices map[string]Matrix                // scope -> matrix data
-	View          View
-	Errors        []ValidationError
-	Warnings      []ValidationError
+	Meta       Meta
+	Elements   map[string]*RuntimeElement // id -> element
+	Graph      *GraphModel
+	ScopeIndex map[string]map[Coordinate]string // scope -> coord -> element id
+	View       View
+	Errors     []ValidationError
+	Warnings   []ValidationError
 }
 
 // GraphNode represents a node in the graph projection.

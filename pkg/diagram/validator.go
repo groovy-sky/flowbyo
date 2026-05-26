@@ -12,11 +12,8 @@ func Validate(model *RuntimeModel) {
 	validateSemantics(model)
 }
 
-// validateStructure checks matrix rectangularity and required fields
+// validateStructure checks required fields.
 func validateStructure(model *RuntimeModel) {
-	// Check root matrix rectangularity
-	validateMatrixRectangularity(model.Root, "root", model)
-
 	// Check each element has required fields
 	for id, elem := range model.Elements {
 		if elem.ID == "" {
@@ -38,32 +35,6 @@ func validateStructure(model *RuntimeModel) {
 				Level:   "fatal",
 				Message: "Element missing required field: type",
 				Element: id,
-			})
-		}
-
-		// Validate nested matrix if present
-		if len(elem.Matrix) > 0 {
-			validateMatrixRectangularity(elem.Matrix, fmt.Sprintf("nested in %s", id), model)
-		}
-	}
-}
-
-// validateMatrixRectangularity checks all rows have equal length
-func validateMatrixRectangularity(m Matrix, scope string, model *RuntimeModel) {
-	if len(m) == 0 {
-		model.Warnings = append(model.Warnings, ValidationError{
-			Level:   "warning",
-			Message: fmt.Sprintf("Empty matrix: %s", scope),
-		})
-		return
-	}
-
-	expectedLen := len(m[0])
-	for y, row := range m {
-		if len(row) != expectedLen {
-			model.Errors = append(model.Errors, ValidationError{
-				Level:   "fatal",
-				Message: fmt.Sprintf("Non-rectangular matrix at %s row %d: expected %d columns, got %d", scope, y, expectedLen, len(row)),
 			})
 		}
 	}
@@ -115,7 +86,7 @@ func isValidID(id string) bool {
 	return true
 }
 
-// validateLinks checks all links point to valid occupied cells
+// validateLinks checks all graph edges reference valid nodes and scope rules.
 func validateLinks(model *RuntimeModel) {
 	if model.Graph == nil {
 		return

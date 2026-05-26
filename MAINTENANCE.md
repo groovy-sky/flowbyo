@@ -3,7 +3,6 @@
 ## Purpose
 - Convert text/markdown schema or YAML diagrams into SVG/HTML outputs.
 - Canonical data model is graph-based (`diagram.graph.nodes` + `diagram.graph.edges`).
-- Matrix input exists for legacy compatibility and is converted to graph runtime projection.
 
 ## Core Flow
 - CLI entry: `cmd/goflowyourself/main.go`
@@ -13,10 +12,10 @@
 ## Key Files
 - `cmd/goflowyourself/main.go`: command parsing + execution flow.
 - `pkg/diagram/schema_parser.go`: ASCII/markdown schema parsing into graph nodes/edges.
-- `pkg/diagram/parser.go`: `BuildRuntimeModel`, graph/matrix compatibility paths, runtime indexes.
+- `pkg/diagram/parser.go`: `BuildRuntimeModel`, graph runtime indexes.
 - `pkg/diagram/validator.go`: structure/identity/link/semantic validation.
 - `pkg/diagram/renderer.go`: SVG and HTML rendering.
-- `pkg/diagram/graph.go`: graph/matrix projection helpers.
+- `pkg/diagram/graph.go`: graph document helpers.
 - `pkg/diagram/types.go`: shared data structures.
 
 ## Constraints / Behavior
@@ -28,7 +27,7 @@
 - `go build ./...`
 - Run representative conversion path, e.g.:
   - `go run cmd/goflowyourself/main.go from-schema --input examples/network-schema.txt --output /tmp/network.svg --html /tmp/network.html --save /tmp/network.yaml`
-- If graph/matrix conversion was touched, also test `load` command on YAML input.
+- Also test `load` command on graph YAML input.
 
 ## Required Update Rule
 - Read this file before making code changes.

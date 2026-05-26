@@ -17,8 +17,6 @@ The canonical model is graph-based.
 - `diagram.graph.edges`: links between node ids
 - `diagram.view`: render preferences
 
-`matrix` input is still accepted only as a legacy compatibility path.
-
 ## CLI
 
 Build:
@@ -65,7 +63,7 @@ go run cmd/goflowyourself/main.go load --input diagram.yaml --validate
 
 ## Input Schema Example
 
-```text
+```flow
              Internet
                 |
            NAT Gateway
@@ -83,7 +81,6 @@ go run cmd/goflowyourself/main.go load --input diagram.yaml --validate
      VPC-A   VPC-B   VPC-C
 ```
 
-```svg
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="510" height="1060" viewBox="0 0 510 1060">
 <defs>
@@ -103,8 +100,9 @@ go run cmd/goflowyourself/main.go load --input diagram.yaml --validate
   </marker>
 </defs>
 <rect width="510" height="1060" fill="white" stroke="#ddd" stroke-width="1"/><line x1="254" y1="110" x2="254" y2="180" class="link"/><line x1="255" y1="250" x2="255" y2="320" class="link"/><line x1="255" y1="530" x2="255" y2="600" class="link"/><line x1="254" y1="670" x2="254" y2="740" class="link"/><line x1="255" y1="810" x2="255" y2="880" class="link"/><line x1="195" y1="810" x2="140" y2="880" class="link"/><line x1="314" y1="810" x2="370" y2="880" class="link"/><line x1="254" y1="390" x2="254" y2="460" class="link"/><rect x="200" y="40" width="110" height="70" class="node node-component"/><text x="255" y="75" class="node-text">Internet</text><rect x="199" y="180" width="111" height="70" class="node node-component"/><text x="254" y="215" class="node-text">NAT Gateway</text><rect x="196" y="320" width="118" height="70" class="node node-component"/><text x="255" y="355" class="node-text">Security VPC</text><rect x="150" y="460" width="209" height="70" class="node node-component"/><text x="254" y="495" class="node-text">Gateway LB / Palo Alto FW</text><rect x="200" y="600" width="110" height="70" class="node node-component"/><text x="255" y="635" class="node-text">GWLBe</text><rect x="185" y="740" width="139" height="70" class="node node-component"/><text x="254" y="775" class="node-text">Transit Gateway</text><rect x="40" y="880" width="110" height="70" class="node node-component"/><text x="95" y="915" class="node-text">VPC-A</text><rect x="200" y="880" width="110" height="70" class="node node-component"/><text x="255" y="915" class="node-text">VPC-B</text><rect x="360" y="880" width="110" height="70" class="node node-component"/><text x="415" y="915" class="node-text">VPC-C</text>
-</svg>
-```
+
+
+![](result.svg)
 
 ## Graph YAML Example
 
@@ -147,10 +145,10 @@ view:
 cmd/goflowyourself/main.go         CLI
 pkg/diagram/schema_parser.go text schema parsing
 pkg/diagram/types.go         model types
-pkg/diagram/parser.go        YAML load + runtime build
+pkg/diagram/parser.go        YAML load + graph runtime build
 pkg/diagram/validator.go     validation
 pkg/diagram/renderer.go      SVG + HTML rendering
-pkg/diagram/graph.go         graph/matrix conversion helpers
+pkg/diagram/graph.go         graph document helpers
 examples/                    sample inputs
 ```
 
@@ -161,7 +159,6 @@ examples/                    sample inputs
 ## Notes
 
 - Cross-scope edges are currently rejected.
-- Matrix is no longer the source of truth.
 - Output HTML embeds the generated SVG directly.
 
 ## License

@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/groovy-sky/goflowyourself/pkg/diagram"
 )
@@ -18,9 +20,7 @@ func main() {
 
 	fromSchemaCmd := flag.NewFlagSet("from-schema", flag.ExitOnError)
 	fromSchemaInput := fromSchemaCmd.String("input", "", "Input text/markdown schema file")
-	fromSchemaOutput := fromSchemaCmd.String("output", "", "Output SVG file")
-	fromSchemaHTML := fromSchemaCmd.String("html", "", "Output HTML file")
-	fromSchemaSave := fromSchemaCmd.String("save", "", "Save graph-based YAML file")
+	fromSchemaOutput := fromSchemaCmd.String("output", "", "Output SVG file (optional, defaults to <input>.svg)")
 	fromSchemaName := fromSchemaCmd.String("name", "Text Schema Diagram", "Diagram name")
 	fromSchemaType := fromSchemaCmd.String("diagram-type", "block-diagram", "Diagram type")
 	fromSchemaVersion := fromSchemaCmd.String("version", "1", "Diagram version")
@@ -36,9 +36,9 @@ func main() {
 		handleLoad(*inputFile, *outputSVG, *outputHTML, *validate, *save)
 	case "from-schema":
 		fromSchemaCmd.Parse(os.Args[2:])
-		handleFromSchema(*fromSchemaInput, *fromSchemaOutput, *fromSchemaHTML, *fromSchemaSave, *fromSchemaName, *fromSchemaType, *fromSchemaVersion)
+		handleFromSchema(*fromSchemaInput, *fromSchemaOutput, *fromSchemaName, *fromSchemaType, *fromSchemaVersion)
 	case "version":
-		fmt.Println("goflowyourself v0.1.0 - Nested Matrix Diagram MVP")
+		fmt.Println("goflowyourself v0.1.0 - Graph Diagram MVP")
 	case "help":
 		printUsage()
 	default:
@@ -48,13 +48,9 @@ func main() {
 	}
 }
 
-func handleFromSchema(input, outputSVG, outputHTML, saveFile, name, diagramType, version string) {
+func handleFromSchema(input, outputSVG, name, diagramType, version string) {
 	if input == "" {
 		fmt.Println("Error: --input is required")
-		os.Exit(1)
-	}
-	if outputSVG == "" && outputHTML == "" && saveFile == "" {
-		fmt.Println("Error: provide at least one output target via --output, --html, or --save")
 		os.Exit(1)
 	}
 
@@ -64,7 +60,15 @@ func handleFromSchema(input, outputSVG, outputHTML, saveFile, name, diagramType,
 		os.Exit(1)
 	}
 
-	d, err := diagram.ParseTextSchemaToDiagram(name, diagramType, version, string(data))
+	sourceText := string(data)
+	parseText := sourceText
+	blockStart, blockEnd := -1, -1
+	if start, end, block, ok := findFlowBlock(sourceText); ok {
+		parseText = block
+		blockStart, blockEnd = start, end
+	}
+
+	d, err := diagram.ParseTextSchemaToDiagram(name, diagramType, version, parseText)
 	if err != nil {
 		fmt.Printf("Error parsing text schema: %v\n", err)
 		os.Exit(1)
@@ -80,23 +84,59 @@ func handleFromSchema(input, outputSVG, outputHTML, saveFile, name, diagramType,
 		os.Exit(1)
 	}
 
-	if err := renderOutputs(model, outputSVG, outputHTML); err != nil {
-		fmt.Printf("Error rendering output: %v\n", err)
-		os.Exit(1)
-	}
+	renderer := diagram.NewSVGRenderer()
+	svgXML := renderer.RenderSVGString(model)
 
-	if saveFile != "" {
-		saveDiagram := &diagram.Diagram{
-			Meta:  d.Meta,
-			Graph: model.Graph,
-			View:  d.View,
-		}
-		if err := diagram.SaveYAML(saveDiagram, saveFile); err != nil {
-			fmt.Printf("Error saving YAML: %v\n", err)
+	if blockStart >= 0 {
+		updated := sourceText[:blockStart] + svgXML + sourceText[blockEnd:]
+		if err := os.WriteFile(input, []byte(updated), 0644); err != nil {
+			fmt.Printf("Error updating markdown file: %v\n", err)
 			os.Exit(1)
 		}
-		fmt.Printf("✓ Graph YAML saved: %s\n", saveFile)
+		fmt.Printf("✓ Replaced flow block with SVG XML in: %s\n", input)
 	}
+
+	if outputSVG == "" {
+		outputSVG = defaultSVGOutputPath(input)
+	}
+
+	if err := os.WriteFile(outputSVG, []byte(svgXML), 0644); err != nil {
+		fmt.Printf("Error writing SVG: %v\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("✓ SVG generated: %s\n", outputSVG)
+}
+
+func findFlowBlock(content string) (start, end int, block string, ok bool) {
+	idx := strings.Index(content, "```flow")
+	if idx == -1 {
+		return 0, 0, "", false
+	}
+
+	openEnd := strings.Index(content[idx:], "\n")
+	if openEnd == -1 {
+		return 0, 0, "", false
+	}
+	openEnd += idx + 1
+
+	closeIdx := strings.Index(content[openEnd:], "\n```")
+	if closeIdx == -1 {
+		return 0, 0, "", false
+	}
+	closeIdx += openEnd
+
+	start = idx
+	end = closeIdx + len("\n```")
+	block = strings.Trim(content[openEnd:closeIdx], "\n")
+	return start, end, block, true
+}
+
+func defaultSVGOutputPath(input string) string {
+	ext := filepath.Ext(input)
+	if ext == "" {
+		return input + ".svg"
+	}
+	return strings.TrimSuffix(input, ext) + ".svg"
 }
 
 func handleLoad(input, outputSVG, outputHTML string, validateOnly bool, saveFile string) {
@@ -181,17 +221,18 @@ func renderOutputs(model *diagram.RuntimeModel, outputSVG, outputHTML string) er
 }
 
 func printUsage() {
-	fmt.Println(`goflowyourself - Nested Matrix Diagram Tool
+	fmt.Println(`goflowyourself - Graph Diagram Tool
 
 Usage:
 	goflowyourself load --input <file.yaml> [--output <file.svg>] [--html <file.html>] [--save <file.yaml>] [--validate]
-	goflowyourself from-schema --input <schema.txt> [--output <file.svg>] [--html <file.html>] [--save <file.yaml>]
+	goflowyourself from-schema --input <schema.txt|file.md> [--output <file.svg>]
 	goflowyourself version
 	goflowyourself help
 
 Commands:
 	load        Parse graph-based YAML, validate, and render a diagram
-	from-schema Parse ASCII/markdown schema text and generate diagram outputs
+	from-schema Parse ASCII/markdown schema and generate SVG
+	            If input contains a fenced flow block, it is replaced in-place with SVG XML
   version    Show version
   help       Show this help message
 
@@ -206,5 +247,6 @@ Examples:
   goflowyourself load --input diagram.yaml --output diagram.svg
 	goflowyourself load --input diagram.yaml --html diagram.html
 	goflowyourself load --input diagram.yaml --validate
-	goflowyourself from-schema --input schema.txt --output diagram.svg --html diagram.html --save diagram.yaml`)
+	goflowyourself from-schema --input schema.txt
+	goflowyourself from-schema --input README.md`)
 }

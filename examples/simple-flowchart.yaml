@@ -3,42 +3,65 @@ meta:
   diagram_type: flowchart
   version: "1"
 
-matrix:
-  - - id: START_1
+graph:
+  nodes:
+    START_1:
+      id: START_1
       label: "Start"
       type: start
-      links:
-        - to: [0, 1]
-  
-  - - id: AUTH_PROMPT
+      scope: root
+      coord: [0, 0]
+    AUTH_PROMPT:
+      id: AUTH_PROMPT
       label: "Request Credentials"
       type: process
-      links:
-        - to: [0, 2]
-  
-  - - id: AUTH_VALIDATE
+      scope: root
+      coord: [0, 1]
+    AUTH_VALIDATE:
+      id: AUTH_VALIDATE
       label: "Valid?"
       type: decision
-      links:
-        - to: [1, 1]
-          label: "Yes"
-        - to: [0, 3]
-          label: "No"
-  
-  - - id: AUTH_FAILED
+      scope: root
+      coord: [0, 2]
+    AUTH_FAILED:
+      id: AUTH_FAILED
       label: "Auth Failed"
       type: process
-      links:
-        - to: [0, 4]
-    - id: AUTH_SUCCESS
+      scope: root
+      coord: [0, 3]
+    AUTH_SUCCESS:
+      id: AUTH_SUCCESS
       label: "Proceed"
       type: process
-      links:
-        - to: [0, 4]
-  
-  - - id: END_1
+      scope: root
+      coord: [1, 3]
+    END_1:
+      id: END_1
       label: "End"
       type: end
+      scope: root
+      coord: [0, 4]
+  edges:
+    - from: START_1
+      to: AUTH_PROMPT
+      scope: root
+    - from: AUTH_PROMPT
+      to: AUTH_VALIDATE
+      scope: root
+    - from: AUTH_VALIDATE
+      to: AUTH_SUCCESS
+      scope: root
+      label: "Yes"
+    - from: AUTH_VALIDATE
+      to: AUTH_FAILED
+      scope: root
+      label: "No"
+    - from: AUTH_FAILED
+      to: END_1
+      scope: root
+    - from: AUTH_SUCCESS
+      to: END_1
+      scope: root
 
 view:
   direction: TB

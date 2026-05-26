@@ -46,6 +46,11 @@ func (r *SVGRenderer) RenderToSVG(model *RuntimeModel, filePath string) error {
 	return os.WriteFile(filePath, []byte(svg), 0644)
 }
 
+// RenderSVGString returns the rendered SVG XML as a string.
+func (r *SVGRenderer) RenderSVGString(model *RuntimeModel) string {
+	return r.renderSVGDocument(model)
+}
+
 // RenderToHTML generates an HTML file containing embedded SVG.
 func (r *SVGRenderer) RenderToHTML(model *RuntimeModel, filePath string) error {
 	svg := r.renderSVGDocument(model)
@@ -86,9 +91,7 @@ func (r *SVGRenderer) RenderToHTML(model *RuntimeModel, filePath string) error {
 func (r *SVGRenderer) renderSVGDocument(model *RuntimeModel) string {
 	layouts, edges, width, height := r.buildGraphLayout(model)
 	if len(layouts) == 0 {
-		width, height = r.calculateDimensions(model.Root)
-		width += r.Padding * 2
-		height += r.Padding * 2
+		width, height = 800, 600
 	}
 
 	svg := strings.Builder{}
@@ -132,10 +135,6 @@ func (r *SVGRenderer) renderSVGDocument(model *RuntimeModel) string {
 		for _, l := range layouts {
 			r.drawElementWithBox(l.Elem, l.X+l.W/2, l.Y+l.H/2, l.W, l.H, &svg)
 		}
-	} else {
-		// Fallback for non-graph layouts.
-		r.drawMatrix(model.Root, &svg, model, 0)
-		r.drawLinks(model.Root, &svg, model, 0)
 	}
 
 	svg.WriteString("\n</svg>")
@@ -334,46 +333,6 @@ func clampInt(v, minV, maxV int) int {
 	return v
 }
 
-// calculateDimensions computes SVG dimensions needed for matrix
-func (r *SVGRenderer) calculateDimensions(m Matrix) (width, height int) {
-	if len(m) == 0 {
-		return 0, 0
-	}
-
-	height = len(m) * r.CellHeight
-	if len(m) > 0 {
-		width = len(m[0]) * r.CellWidth
-	}
-
-	return
-}
-
-// drawMatrix recursively draws all elements in a matrix
-func (r *SVGRenderer) drawMatrix(m Matrix, svg *strings.Builder, model *RuntimeModel, nestLevel int) {
-	for y, row := range m {
-		for x, cell := range row {
-			if cell == nil {
-				continue
-			}
-
-			px := r.Padding + x*r.CellWidth + r.CellWidth/2
-			py := r.Padding + y*r.CellHeight + r.CellHeight/2
-
-			r.drawElement(cell, px, py, svg)
-
-			// Recursively draw nested matrix
-			if len(cell.Matrix) > 0 && !model.View.CollapseNested {
-				r.drawMatrix(cell.Matrix, svg, model, nestLevel+1)
-			}
-		}
-	}
-}
-
-// drawElement draws a single element node
-func (r *SVGRenderer) drawElement(elem *Element, centerX, centerY int, svg *strings.Builder) {
-	r.drawElementWithBox(elem, centerX, centerY, r.CellWidth-10, r.CellHeight-10, svg)
-}
-
 func (r *SVGRenderer) drawElementWithBox(elem *Element, centerX, centerY, width, height int, svg *strings.Builder) {
 	nodeClass := fmt.Sprintf("node node-%s", elem.Type)
 
@@ -413,42 +372,6 @@ func (r *SVGRenderer) drawDiamond(centerX, centerY int, class string, svg *strin
 
 	svg.WriteString(fmt.Sprintf(
 		`<polygon points="%s" class="%s"/>`, points, class))
-}
-
-// drawLinks draws all links between elements
-func (r *SVGRenderer) drawLinks(m Matrix, svg *strings.Builder, model *RuntimeModel, nestLevel int) {
-	for y, row := range m {
-		for x, cell := range row {
-			if cell == nil {
-				continue
-			}
-
-			for _, link := range cell.Links {
-				fromX := r.Padding + x*r.CellWidth + r.CellWidth/2
-				fromY := r.Padding + y*r.CellHeight + r.CellHeight/2
-
-				toX := r.Padding + link.To[0]*r.CellWidth + r.CellWidth/2
-				toY := r.Padding + link.To[1]*r.CellHeight + r.CellHeight/2
-
-				svg.WriteString(fmt.Sprintf(
-					`<line x1="%d" y1="%d" x2="%d" y2="%d" class="link"/>`,
-					fromX, fromY, toX, toY))
-
-				if link.Label != "" {
-					midX := (fromX + toX) / 2
-					midY := (fromY + toY) / 2
-					svg.WriteString(fmt.Sprintf(
-						`<text x="%d" y="%d" class="link-label">%s</text>`,
-						midX, midY-5, escapeXML(link.Label)))
-				}
-			}
-
-			// Recursively draw links in nested matrix
-			if len(cell.Matrix) > 0 && !model.View.CollapseNested {
-				r.drawLinks(cell.Matrix, svg, model, nestLevel+1)
-			}
-		}
-	}
 }
 
 // escapeXML escapes XML special characters

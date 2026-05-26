@@ -3,40 +3,63 @@ meta:
   diagram_type: block-diagram
   version: "1"
 
-matrix:
-  - - id: API_GATEWAY
+graph:
+  nodes:
+    API_GATEWAY:
+      id: API_GATEWAY
       label: "API Gateway"
       type: component
-      links:
-        - to: [1, 0]
-  
-    - id: AUTH_SERVICE
+      scope: root
+      coord: [0, 0]
+    AUTH_SERVICE:
+      id: AUTH_SERVICE
       label: "Auth Service"
       type: subprocess
-      matrix:
-        - - id: AUTH_START
-            label: "Start"
-            type: start
-            links:
-              - to: [1, 0]
-        
-          - id: AUTH_VALIDATE
-            label: "Validate Token"
-            type: process
-            links:
-              - to: [1, 0]
-        
-          - id: AUTH_END
-            label: "End"
-            type: end
-
-  - - id: DB_SERVICE
+      scope: root
+      coord: [1, 0]
+    DB_SERVICE:
+      id: DB_SERVICE
       label: "Database"
       type: component
-  
-    - id: CACHE_SERVICE
+      scope: root
+      coord: [0, 1]
+    CACHE_SERVICE:
+      id: CACHE_SERVICE
       label: "Cache"
       type: component
+      scope: root
+      coord: [1, 1]
+    AUTH_START:
+      id: AUTH_START
+      label: "Start"
+      type: start
+      scope: AUTH_SERVICE
+      parent_id: AUTH_SERVICE
+      coord: [0, 0]
+    AUTH_VALIDATE:
+      id: AUTH_VALIDATE
+      label: "Validate Token"
+      type: process
+      scope: AUTH_SERVICE
+      parent_id: AUTH_SERVICE
+      coord: [1, 0]
+    AUTH_END:
+      id: AUTH_END
+      label: "End"
+      type: end
+      scope: AUTH_SERVICE
+      parent_id: AUTH_SERVICE
+      coord: [2, 0]
+  edges:
+    - from: API_GATEWAY
+      to: AUTH_SERVICE
+      scope: root
+    - from: AUTH_START
+      to: AUTH_VALIDATE
+      scope: AUTH_SERVICE
+    - from: AUTH_VALIDATE
+      to: AUTH_END
+      scope: AUTH_SERVICE
 
 view:
   direction: LR
